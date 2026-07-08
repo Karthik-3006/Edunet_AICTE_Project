@@ -1,0 +1,259 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — Skill Analyzer{% endblock %}
+
+{% block content %}
+<div class="info-page">
+  <a href="/" class="info-back">← Back to Home</a>
+
+  <!-- Hero -->
+  <div class="info-hero" style="background:linear-gradient(135deg,#059669 0%,#047857 100%);">
+    <div class="info-hero-badge">Global Skill Competitiveness</div>
+    <h1 class="info-hero-title">🧠 Skill Competitiveness Analyzer</h1>
+    <p class="info-hero-sub">Enter your skills — IBM Granite will rate how competitive you are in today's job market and suggest what to learn next</p>
+  </div>
+
+  <!-- Form card -->
+  <div class="ra-upload-card" id="skillFormCard">
+    <h2 class="rmap-form-title">What are your current skills?</h2>
+    <p class="rmap-form-sub">List your technical skills, tools, frameworks, and soft skills. Separate them with commas.</p>
+
+    <!-- Skill tag input -->
+    <div class="sk-tag-wrapper" id="skillTagWrapper">
+      <div class="sk-tags" id="skillTags"></div>
+      <input type="text" id="skillTagInput" class="sk-tag-input"
+        placeholder="Type a skill and press Enter or comma… e.g. Python, React, Docker" autocomplete="off" />
+    </div>
+    <p class="sk-hint">Press <kbd>Enter</kbd> or <kbd>,</kbd> to add each skill. Click a tag to remove it.</p>
+    <span class="setup-error" id="skillError"></span>
+
+    <!-- Quick-add popular skills -->
+    <p class="setup-label" style="margin-top:16px;margin-bottom:8px;">Quick-add popular skills:</p>
+    <div class="rmap-chips" id="quickSkillChips">
+      <button type="button" class="rmap-chip" data-skill="Python">Python</button>
+      <button type="button" class="rmap-chip" data-skill="JavaScript">JavaScript</button>
+      <button type="button" class="rmap-chip" data-skill="React">React</button>
+      <button type="button" class="rmap-chip" data-skill="Node.js">Node.js</button>
+      <button type="button" class="rmap-chip" data-skill="SQL">SQL</button>
+      <button type="button" class="rmap-chip" data-skill="Docker">Docker</button>
+      <button type="button" class="rmap-chip" data-skill="Kubernetes">Kubernetes</button>
+      <button type="button" class="rmap-chip" data-skill="Machine Learning">Machine Learning</button>
+      <button type="button" class="rmap-chip" data-skill="Java">Java</button>
+      <button type="button" class="rmap-chip" data-skill="AWS">AWS</button>
+      <button type="button" class="rmap-chip" data-skill="TypeScript">TypeScript</button>
+      <button type="button" class="rmap-chip" data-skill="Git">Git</button>
+      <button type="button" class="rmap-chip" data-skill="REST API">REST API</button>
+      <button type="button" class="rmap-chip" data-skill="Agile / Scrum">Agile / Scrum</button>
+    </div>
+
+    <div class="rmap-form-row" style="margin-top:20px;">
+      <div class="rmap-form-group">
+        <label class="setup-label" for="skTargetRole">Target Job Role</label>
+        <input type="text" id="skTargetRole" class="setup-input"
+          placeholder="e.g. Data Scientist, DevOps Engineer…" list="skRoleList" />
+        <datalist id="skRoleList">
+          <option value="Software Engineer">
+          <option value="Data Scientist">
+          <option value="Full Stack Developer">
+          <option value="DevOps Engineer">
+          <option value="Machine Learning Engineer">
+          <option value="Frontend Developer">
+          <option value="Backend Developer">
+          <option value="Cloud Architect">
+          <option value="Cybersecurity Analyst">
+          <option value="Product Manager">
+        </datalist>
+      </div>
+      <div class="rmap-form-group">
+        <label class="setup-label" for="skExperience">Experience Level</label>
+        <select id="skExperience" class="setup-input">
+          <option value="Entry Level (0-2 years)">Entry Level (0–2 years)</option>
+          <option value="Mid Level (2-5 years)">Mid Level (2–5 years)</option>
+          <option value="Senior Level (5-8 years)">Senior Level (5–8 years)</option>
+          <option value="Lead / Principal (8+ years)">Lead / Principal (8+ years)</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="portal-btn portal-btn-primary portal-btn-full" id="analyzeSkillBtn" style="background:#059669;">
+      🧠 Analyze My Skills
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="rmap-loading hidden" id="skLoading">
+    <div class="rmap-spinner" style="border-top-color:#059669;"></div>
+    <p>IBM Granite is evaluating your skill competitiveness…</p>
+  </div>
+
+  <!-- Result -->
+  <div class="hidden" id="skResult"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const tags   = new Set();
+  const tagsEl = document.getElementById("skillTags");
+  const input  = document.getElementById("skillTagInput");
+
+  function addTag(val) {
+    val = val.trim().replace(/,+$/, "").trim();
+    if (!val || tags.has(val.toLowerCase())) return;
+    tags.add(val.toLowerCase());
+    const span = document.createElement("span");
+    span.className = "sk-tag";
+    span.textContent = val;
+    span.title = "Click to remove";
+    span.addEventListener("click", () => { tags.delete(val.toLowerCase()); span.remove(); });
+    tagsEl.appendChild(span);
+  }
+
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag(input.value);
+      input.value = "";
+    } else if (e.key === "Backspace" && !input.value) {
+      const lastTag = tagsEl.lastElementChild;
+      if (lastTag) { tags.delete(lastTag.textContent.toLowerCase()); lastTag.remove(); }
+    }
+  });
+
+  // Quick-add chips
+  document.querySelectorAll("#quickSkillChips .rmap-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      addTag(chip.dataset.skill);
+      chip.classList.toggle("active");
+    });
+  });
+
+  // Analyze button
+  document.getElementById("analyzeSkillBtn").addEventListener("click", async () => {
+    if (input.value.trim()) { addTag(input.value.trim()); input.value = ""; }
+    const skillList = Array.from(tagsEl.querySelectorAll(".sk-tag")).map(t => t.textContent);
+    const errEl     = document.getElementById("skillError");
+
+    if (!skillList.length) {
+      errEl.textContent = "Please add at least one skill.";
+      return;
+    }
+    errEl.textContent = "";
+
+    const role = document.getElementById("skTargetRole").value.trim();
+    const exp  = document.getElementById("skExperience").value;
+    const btn  = document.getElementById("analyzeSkillBtn");
+
+    btn.disabled = true; btn.textContent = "Analyzing…";
+    document.getElementById("skLoading").classList.remove("hidden");
+    document.getElementById("skResult").classList.add("hidden");
+
+    try {
+      const res  = await fetch("/analyze_skills", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ skills: skillList, target_role: role, experience: exp }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showAlert(data.error || "Analysis failed."); return; }
+      renderSkillResult(data, skillList, role);
+    } catch(err) {
+      showAlert("Network error — please try again.");
+    } finally {
+      btn.disabled = false; btn.textContent = "🧠 Analyze My Skills";
+      document.getElementById("skLoading").classList.add("hidden");
+    }
+  });
+
+  function renderSkillResult(d, skills, role) {
+    const score    = d.competitiveness_score || 0;
+    const color    = score >= 75 ? "#059669" : score >= 50 ? "#d97706" : "#dc2626";
+    const grade    = score >= 75 ? "Highly Competitive 🌟" : score >= 50 ? "Competitive 👍" : "Needs Development 📚";
+    const strong   = d.strong_skills    || [];
+    const weak     = d.weak_skills      || [];
+    const trending = d.trending_skills  || [];
+    const learning = d.learning_suggestions || [];
+    const courses  = d.free_courses     || [];
+
+    let html = `
+      <div class="ra-result-header">
+        <div class="ra-score-ring">
+          <svg viewBox="0 0 120 120" class="ra-ring-svg">
+            <circle cx="60" cy="60" r="50" stroke="#e2e5ea" stroke-width="10" fill="none"/>
+            <circle cx="60" cy="60" r="50" stroke="${color}" stroke-width="10" fill="none"
+              stroke-dasharray="314" stroke-dashoffset="${314 - (score/100)*314}"
+              stroke-linecap="round" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="ra-score-num" style="color:${color}">${score}</div>
+          <div class="ra-score-lbl">/ 100</div>
+        </div>
+        <div class="ra-score-meta">
+          <h2 class="ra-grade">${grade}</h2>
+          ${role ? `<p class="ra-role-pill">Target Role: <strong>${escHtml(role)}</strong></p>` : ""}
+          ${d.summary ? `<p class="ra-summary">${escHtml(d.summary)}</p>` : ""}
+        </div>
+      </div>
+
+      <div class="ra-grid">
+        <div class="ra-block ra-block-green">
+          <h4>🌟 Strong &amp; In-Demand Skills</h4>
+          <ul>${strong.length ? strong.map(s=>`<li>${escHtml(s)}</li>`).join("") : "<li>No highly competitive skills detected</li>"}</ul>
+        </div>
+        <div class="ra-block ra-block-red">
+          <h4>📈 Skills to Improve / Add</h4>
+          <ul>${weak.length ? weak.map(s=>`<li>${escHtml(s)}</li>`).join("") : "<li>All skills look competitive!</li>"}</ul>
+        </div>
+      </div>`;
+
+    if (trending.length) {
+      html += `<div class="ra-card"><h4 class="ra-card-title">🔥 Trending Skills in Your Domain</h4>
+        <div class="sn-dashboard-pills">${trending.map(t=>`<span class="sn-pill" style="background:#f0fdf4;color:#16a34a;border-color:#bbf7d0;">${escHtml(t)}</span>`).join("")}</div></div>`;
+    }
+
+    if (learning.length) {
+      html += `<div class="ra-card"><h4 class="ra-card-title">🎯 Personalised Learning Suggestions</h4>
+        <ol class="ra-suggestions">${learning.map(l=>`<li>${escHtml(l)}</li>`).join("")}</ol></div>`;
+    }
+
+    if (courses.length) {
+      html += `<div class="ra-card"><h4 class="ra-card-title">🆓 Free Learning Resources</h4>
+        <div class="rmap-resource-list">${courses.map(c => `
+          <div class="rmap-resource-item">
+            <span class="rmap-resource-icon">🔗</span>
+            <div><strong>${escHtml(c.title||c)}</strong>
+              ${c.platform ? `<span class="rmap-res-meta"> — ${escHtml(c.platform)}</span>` : ""}
+              ${c.url ? `<a class="rmap-res-link" href="${escHtml(c.url)}" target="_blank" rel="noopener">Open Course ↗</a>` : ""}
+              ${c.reason ? `<p class="rmap-res-reason">${escHtml(c.reason)}</p>` : ""}</div>
+          </div>`).join("")}</div></div>`;
+    }
+
+    html += `
+      <div class="rmap-result-cta">
+        <a href="/interview_setup" class="portal-btn portal-btn-primary portal-btn-lg">🚀 Start Mock Interview</a>
+        <a href="/resume_analyzer" class="portal-btn portal-btn-outline portal-btn-lg">📄 Analyze Resume</a>
+        <button onclick="document.getElementById('skResult').classList.add('hidden');window.scrollTo({top:0,behavior:'smooth'})"
+          class="portal-btn portal-btn-secondary portal-btn-lg">🔄 Re-Analyze</button>
+      </div>`;
+
+    const container = document.getElementById("skResult");
+    container.innerHTML = html;
+    container.classList.remove("hidden");
+    container.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+
+  function escHtml(s) {
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function showAlert(msg) {
+    let b = document.getElementById("skAlert");
+    if (!b) {
+      b = document.createElement("div"); b.id="skAlert";
+      b.style.cssText="position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;z-index:999;max-width:90vw;";
+      document.body.appendChild(b);
+    }
+    b.textContent = msg; b.style.display = "block";
+    setTimeout(() => { b.style.display="none"; }, 4000);
+  }
+});
+</script>
+{% endblock %}

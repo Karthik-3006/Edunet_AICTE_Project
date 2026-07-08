@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}AI Interview Trainer{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- ── Navigation ─────────────────────────────────────────────────── -->
+  <nav class="pnav">
+    <div class="pnav-inner">
+      <button class="pnav-hamburger" id="hamburgerBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="/" class="pnav-brand">
+        🚀 <span>Interview Trainer Agent</span>
+      </a>
+      <div class="pnav-links">
+        <a href="/" class="pnav-link">Home</a>
+        <a href="/guidelines" class="pnav-link">Guidelines</a>
+        <a href="/faqs" class="pnav-link">FAQ's</a>
+        <span class="pnav-btn" style="cursor:default;opacity:.7;">Powered by IBM Granite</span>
+      </div>
+    </div>
+    <div class="pnav-drawer hidden" id="navDrawer">
+      <a href="/" class="pnav-drawer-link">Home</a>
+      <a href="/guidelines" class="pnav-drawer-link">Guidelines</a>
+      <a href="/faqs" class="pnav-drawer-link">FAQ's</a>
+      <a href="/interview_setup" class="pnav-drawer-link highlight">Launch Interview</a>
+    </div>
+  </nav>
+
+  <!-- ── Main content ────────────────────────────────────────────────── -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────────── -->
+  <footer class="pfooter">
+    <p>Interview Trainer Agent &mdash; Powered by <strong>IBM Granite</strong> &bull; IBM Cloud Lite Services &bull; &copy; 2024</p>
+  </footer>
+
+  <script>
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const navDrawer    = document.getElementById("navDrawer");
+    if (hamburgerBtn && navDrawer) {
+      hamburgerBtn.addEventListener("click", () => {
+        navDrawer.classList.toggle("hidden");
+        hamburgerBtn.classList.toggle("open");
+      });
+      document.addEventListener("click", (e) => {
+        if (!hamburgerBtn.contains(e.target) && !navDrawer.contains(e.target)) {
+          navDrawer.classList.add("hidden");
+          hamburgerBtn.classList.remove("open");
+        }
+      });
+    }
+  </script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

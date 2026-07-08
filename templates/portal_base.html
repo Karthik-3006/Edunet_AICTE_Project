@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Interview Trainer Agent{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}" />
+  {% block head %}{% endblock %}
+
+  <!-- Apply saved theme before first paint to prevent flash -->
+  <script>
+    (function(){
+      var t = localStorage.getItem("ita-theme") || "midnight";
+      if (t !== "default") document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+  <!-- ── Navbar ──────────────────────────────────────────────────────── -->
+  <nav class="pnav {% block nav_class %}{% endblock %}" id="siteNav">
+    <div class="pnav-inner">
+      <button class="pnav-hamburger" id="hamburgerBtn" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <!-- ── Theme Switcher (top-left, before brand) ── -->
+      <div class="theme-switcher" id="themeSwitcher">
+        <button class="theme-switcher-btn" id="themeSwitcherBtn" aria-label="Change theme" title="Change theme">
+          <span class="ts-palette">
+            <span class="ts-dot ts-dot-1"></span>
+            <span class="ts-dot ts-dot-2"></span>
+            <span class="ts-dot ts-dot-3"></span>
+          </span>
+          <span id="themeLabel">Theme</span>
+          <span style="font-size:10px;opacity:.7;">▾</span>
+        </button>
+        <div class="theme-dropdown" id="themeDropdown">
+          <div class="td-header">Choose Theme</div>
+
+          <button class="td-option" data-theme="default" id="opt-default">
+            <span class="td-swatch">
+              <span style="background:#f0f2f5;border-color:#ccc;"></span>
+              <span style="background:#2563eb;"></span>
+              <span style="background:#ffffff;border-color:#ddd;"></span>
+            </span>
+            <span class="td-label">Default (Blue)</span>
+            <span class="td-check hidden">✓</span>
+          </button>
+
+          <button class="td-option" data-theme="midnight" id="opt-midnight">
+            <span class="td-swatch">
+              <span style="background:#0a0a0a;border-color:#444;"></span>
+              <span style="background:#e53e3e;"></span>
+              <span style="background:#141414;border-color:#333;"></span>
+            </span>
+            <span class="td-label">Midnight (Black + Red)</span>
+            <span class="td-check hidden">✓</span>
+          </button>
+
+          <button class="td-option" data-theme="garden" id="opt-garden">
+            <span class="td-swatch">
+              <span style="background:#ffffff;border-color:#ccc;"></span>
+              <span style="background:#16a34a;"></span>
+              <span style="background:#dcfce7;border-color:#86efac;"></span>
+            </span>
+            <span class="td-label">Garden (White + Green)</span>
+            <span class="td-check hidden">✓</span>
+          </button>
+
+          <button class="td-option" data-theme="aurora" id="opt-aurora">
+            <span class="td-swatch">
+              <span style="background:#1a0a2e;border-color:#5a4278;"></span>
+              <span style="background:#c0c0c0;"></span>
+              <span style="background:#231240;border-color:#5a4278;"></span>
+            </span>
+            <span class="td-label">Aurora (Purple + Silver)</span>
+            <span class="td-check hidden">✓</span>
+          </button>
+        </div>
+      </div>
+      <!-- ── /Theme Switcher ── -->
+
+      <a href="/" class="pnav-brand">
+        🚀 <span>Interview Trainer Agent</span>
+      </a>
+      <div class="pnav-links" id="navLinks">
+        <a href="/" class="pnav-link {% if active_page == 'home' %}active{% endif %}">Home</a>
+        <a href="/resume_analyzer" class="pnav-link {% if active_page == 'resume' %}active{% endif %}">Resume Analyzer</a>
+        <a href="/skill_analyzer" class="pnav-link {% if active_page == 'skills' %}active{% endif %}">Skill Analyzer</a>
+        <a href="/guidelines" class="pnav-link {% if active_page == 'guidelines' %}active{% endif %}">Guidelines</a>
+        <a href="/faqs" class="pnav-link {% if active_page == 'faqs' %}active{% endif %}">FAQ's</a>
+        <a href="/interview_setup" class="pnav-btn">🚀 Launch Interview</a>
+      </div>
+    </div>
+    <div class="pnav-drawer hidden" id="navDrawer">
+      <a href="/" class="pnav-drawer-link">🏠 Home</a>
+      <a href="/resume_analyzer" class="pnav-drawer-link">📄 Resume Analyzer</a>
+      <a href="/skill_analyzer" class="pnav-drawer-link">🧠 Skill Analyzer</a>
+      <a href="/start_now" class="pnav-drawer-link">🗺️ Get Roadmap</a>
+      <a href="/guidelines" class="pnav-drawer-link">📋 Guidelines</a>
+      <a href="/faqs" class="pnav-drawer-link">❓ FAQ's</a>
+      <a href="/get_started" class="pnav-drawer-link">ℹ️ About the Agent</a>
+      <a href="/interview_setup" class="pnav-drawer-link highlight">🚀 Launch Interview</a>
+    </div>
+  </nav>
+
+  <!-- ── Main content ──────────────────────────────────────────────── -->
+  <main class="pmain {% block main_class %}{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── Footer ────────────────────────────────────────────────────── -->
+  <footer class="pfooter {% block footer_class %}{% endblock %}">
+    <p>Interview Trainer Agent &mdash; Powered by <strong>IBM Granite</strong> &amp; RAG &bull; IBM Cloud Lite Services &bull; &copy; 2024</p>
+  </footer>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       VOICE AI — Floating Action Button + Panel
+       Uses Web Speech API (SpeechSynthesis) — no server needed
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="voice-fab" id="voiceFab">
+    <!-- Expandable panel (shown above the FAB) -->
+    <div class="voice-panel" id="voicePanel">
+      <div class="vp-header">
+        <span class="vp-title">🔊 AI Voice Reader</span>
+        <button class="vp-close" id="vpClose" title="Close">✕</button>
+      </div>
+      <div class="vp-body">
+        <div class="vp-status" id="vpStatus">Ready — select what to read</div>
+
+        <!-- Quick-read targets -->
+        <div class="vp-targets" id="vpTargets">
+          <button class="vp-target-btn" data-target="headings">📰 Read Page Headings</button>
+          <button class="vp-target-btn" data-target="main">📄 Read Main Content</button>
+          <button class="vp-target-btn" data-target="question">❓ Read Current Question</button>
+          <button class="vp-target-btn" data-target="feedback">💬 Read AI Feedback</button>
+          <button class="vp-target-btn" data-target="result">📊 Read Analysis Result</button>
+        </div>
+
+        <!-- Playback controls -->
+        <div class="vp-controls">
+          <button class="vp-ctrl-btn" id="vpPause" disabled>⏸ Pause</button>
+          <button class="vp-ctrl-btn" id="vpResume" disabled>▶ Resume</button>
+          <button class="vp-ctrl-btn stop-btn" id="vpStop" disabled>⏹ Stop</button>
+        </div>
+
+        <!-- Speed control -->
+        <div class="vp-rate-row">
+          <label for="vpRate">Speed:</label>
+          <input type="range" id="vpRate" class="vp-rate-slider"
+                 min="0.5" max="2" step="0.1" value="1" />
+          <span class="vp-rate-val" id="vpRateVal">1.0×</span>
+        </div>
+
+        <!-- Custom text input -->
+        <div class="vp-custom-row">
+          <input type="text" id="vpCustomText" class="vp-custom-input"
+                 placeholder="Or type anything to hear…" />
+          <button class="vp-speak-btn" id="vpSpeakCustom">Speak</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- The main FAB button -->
+    <button class="voice-fab-btn" id="voiceFabBtn" title="AI Voice Reader">
+      🔊
+    </button>
+  </div>
+  <!-- ── /Voice AI ── -->
+
+  <script>
+  /* ================================================================
+     HAMBURGER MENU
+     ================================================================ */
+  const hamburgerBtn = document.getElementById("hamburgerBtn");
+  const navDrawer    = document.getElementById("navDrawer");
+  if (hamburgerBtn && navDrawer) {
+    hamburgerBtn.addEventListener("click", () => {
+      navDrawer.classList.toggle("hidden");
+      hamburgerBtn.classList.toggle("open");
+    });
+    document.addEventListener("click", (e) => {
+      if (!hamburgerBtn.contains(e.target) && !navDrawer.contains(e.target)) {
+        navDrawer.classList.add("hidden");
+        hamburgerBtn.classList.remove("open");
+      }
+    });
+  }
+
+  // Glass navbar scroll opacity
+  const nav = document.getElementById("siteNav");
+  if (nav && document.body.classList.contains("home-page")) {
+    window.addEventListener("scroll", () => {
+      nav.classList.toggle("pnav-scrolled", window.scrollY > 40);
+    });
+  }
+
+  /* ================================================================
+     THEME SWITCHER
+     ================================================================ */
+  (function () {
+    const THEMES = {
+      default:  { label: "Default",  dots: ["#f0f2f5","#2563eb","#ffffff"] },
+      midnight: { label: "Midnight", dots: ["#0a0a0a","#e53e3e","#141414"] },
+      garden:   { label: "Garden",   dots: ["#ffffff","#16a34a","#dcfce7"] },
+      aurora:   { label: "Aurora",   dots: ["#1a0a2e","#c0c0c0","#231240"] },
+    };
+
+    const switcher   = document.getElementById("themeSwitcher");
+    const switcherBtn= document.getElementById("themeSwitcherBtn");
+    const dropdown   = document.getElementById("themeDropdown");
+    const labelEl    = document.getElementById("themeLabel");
+    const dots       = switcherBtn.querySelectorAll(".ts-dot");
+
+    let current = localStorage.getItem("ita-theme") || "midnight";
+
+    function applyTheme(t) {
+      current = t;
+      localStorage.setItem("ita-theme", t);
+      if (t === "default") {
+        document.documentElement.removeAttribute("data-theme");
+      } else {
+        document.documentElement.setAttribute("data-theme", t);
+      }
+      // Update button dots
+      const td = THEMES[t] || THEMES.default;
+      labelEl.textContent = td.label;
+      dots.forEach((d, i) => { d.style.background = td.dots[i] || "#ccc"; });
+      // Update active check marks
+      document.querySelectorAll(".td-option").forEach(opt => {
+        const isActive = opt.dataset.theme === t;
+        opt.classList.toggle("active", isActive);
+        opt.querySelector(".td-check").classList.toggle("hidden", !isActive);
+      });
+    }
+
+    // Initialize on load
+    applyTheme(current);
+
+    // Toggle dropdown
+    switcherBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle("open");
+    });
+
+    // Pick a theme
+    document.querySelectorAll(".td-option").forEach(opt => {
+      opt.addEventListener("click", (e) => {
+        e.stopPropagation();
+        applyTheme(opt.dataset.theme);
+        dropdown.classList.remove("open");
+      });
+    });
+
+    // Close on outside click
+    document.addEventListener("click", (e) => {
+      if (!switcher.contains(e.target)) dropdown.classList.remove("open");
+    });
+  })();
+
+  /* ================================================================
+     VOICE AI (Web Speech API — SpeechSynthesis)
+     ================================================================ */
+  (function () {
+    const synth   = window.speechSynthesis;
+    const fabBtn  = document.getElementById("voiceFabBtn");
+    const panel   = document.getElementById("voicePanel");
+    const vpClose = document.getElementById("vpClose");
+    const statusEl= document.getElementById("vpStatus");
+    const pauseBtn= document.getElementById("vpPause");
+    const resumeBtn=document.getElementById("vpResume");
+    const stopBtn = document.getElementById("vpStop");
+    const rateSlider=document.getElementById("vpRate");
+    const rateVal = document.getElementById("vpRateVal");
+    const customIn= document.getElementById("vpCustomText");
+    const speakCustom=document.getElementById("vpSpeakCustom");
+
+    // Check browser support
+    if (!synth) {
+      fabBtn.title = "Voice not supported in this browser";
+      fabBtn.style.opacity = ".4";
+      fabBtn.style.cursor  = "not-allowed";
+      return;
+    }
+
+    let activeTargetBtn = null;
+
+    // Toggle panel
+    fabBtn.addEventListener("click", () => {
+      panel.classList.toggle("open");
+    });
+    vpClose.addEventListener("click", () => {
+      panel.classList.remove("open");
+    });
+
+    // Speed slider
+    rateSlider.addEventListener("input", () => {
+      rateVal.textContent = parseFloat(rateSlider.value).toFixed(1) + "×";
+    });
+
+    /* ── Core speak function ── */
+    function speak(text, label) {
+      if (!text || !text.trim()) {
+        setStatus("Nothing to read here.", false);
+        return;
+      }
+      synth.cancel();
+      const utt = new SpeechSynthesisUtterance(text.trim());
+      utt.rate  = parseFloat(rateSlider.value);
+      utt.pitch = 1;
+      utt.lang  = "en-US";
+
+      utt.onstart = () => {
+        setStatus("🔊 Reading: " + (label || "content") + "…", true);
+        fabBtn.classList.add("speaking");
+        pauseBtn.disabled  = false;
+        resumeBtn.disabled = true;
+        stopBtn.disabled   = false;
+      };
+      utt.onend = utt.onerror = () => {
+        setStatus("Done — select content to read again", false);
+        fabBtn.classList.remove("speaking");
+        pauseBtn.disabled  = true;
+        resumeBtn.disabled = true;
+        stopBtn.disabled   = true;
+        if (activeTargetBtn) { activeTargetBtn.classList.remove("reading"); activeTargetBtn = null; }
+      };
+      synth.speak(utt);
+    }
+
+    /* ── Extract text by target key ── */
+    function extractText(target) {
+      switch (target) {
+
+        case "headings": {
+          const heads = document.querySelectorAll("h1,h2,h3,h4");
+          return Array.from(heads).map(h => h.innerText.trim()).filter(Boolean).join(". ");
+        }
+
+        case "main": {
+          // Prefer .info-page, .setup-page, .rmap-form-card, or <main>
+          const candidates = [
+            ".info-page", ".setup-page", ".rmap-form-card",
+            ".ra-upload-card", "#raResult", "#roadmapResult", "#skResult",
+            "main"
+          ];
+          for (const sel of candidates) {
+            const el = document.querySelector(sel);
+            if (el) return el.innerText.trim();
+          }
+          return document.body.innerText.trim();
+        }
+
+        case "question": {
+          // Interview page question
+          const q = document.getElementById("questionText");
+          if (q) return q.innerText.trim();
+          // Roadmap / setup hero sub
+          const sub = document.querySelector(".setup-hero-sub, .info-hero-sub, .rmap-form-sub");
+          if (sub) return sub.innerText.trim();
+          return "";
+        }
+
+        case "feedback": {
+          const fb = document.getElementById("feedbackCard");
+          if (fb && !fb.classList.contains("hidden")) return fb.innerText.trim();
+          const sc = document.getElementById("scoreSummary");
+          if (sc) return sc.innerText.trim();
+          return "";
+        }
+
+        case "result": {
+          // Resume / skill analyzer results
+          for (const id of ["raResult","skResult","roadmapResult"]) {
+            const el = document.getElementById(id);
+            if (el && !el.classList.contains("hidden")) return el.innerText.trim();
+          }
+          return "";
+        }
+
+        default:
+          return "";
+      }
+    }
+
+    /* ── Target buttons ── */
+    document.querySelectorAll(".vp-target-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        synth.cancel();
+        if (activeTargetBtn) activeTargetBtn.classList.remove("reading");
+        activeTargetBtn = btn;
+        btn.classList.add("reading");
+        const text = extractText(btn.dataset.target);
+        if (!text) {
+          setStatus("No content found for this section.", false);
+          btn.classList.remove("reading");
+          activeTargetBtn = null;
+          return;
+        }
+        speak(text, btn.textContent.trim());
+      });
+    });
+
+    /* ── Speak custom text ── */
+    speakCustom.addEventListener("click", () => {
+      const t = customIn.value.trim();
+      if (!t) { customIn.focus(); return; }
+      speak(t, "custom text");
+    });
+    customIn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") speakCustom.click();
+    });
+
+    /* ── Playback controls ── */
+    pauseBtn.addEventListener("click", () => {
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+        setStatus("⏸ Paused", false);
+        pauseBtn.disabled  = true;
+        resumeBtn.disabled = false;
+      }
+    });
+    resumeBtn.addEventListener("click", () => {
+      if (synth.paused) {
+        synth.resume();
+        setStatus("▶ Resumed…", true);
+        pauseBtn.disabled  = false;
+        resumeBtn.disabled = true;
+      }
+    });
+    stopBtn.addEventListener("click", () => {
+      synth.cancel();
+      setStatus("Stopped.", false);
+      fabBtn.classList.remove("speaking");
+      pauseBtn.disabled  = true;
+      resumeBtn.disabled = true;
+      stopBtn.disabled   = true;
+      if (activeTargetBtn) { activeTargetBtn.classList.remove("reading"); activeTargetBtn = null; }
+    });
+
+    function setStatus(msg, isActive) {
+      statusEl.textContent = msg;
+      statusEl.classList.toggle("active", !!isActive);
+    }
+
+    // Stop speech when navigating away
+    window.addEventListener("beforeunload", () => synth.cancel());
+  })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

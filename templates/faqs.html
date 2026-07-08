@@ -1,0 +1,140 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — FAQ's{% endblock %}
+
+{% block content %}
+<div class="info-page">
+  <a href="/" class="info-back">← Back to Home</a>
+
+  <div class="info-hero">
+    <div class="info-hero-badge">Frequently Asked Questions</div>
+    <h1 class="info-hero-title">FAQ's</h1>
+    <p class="info-hero-sub">Everything you need to know about the Interview Trainer Agent</p>
+  </div>
+
+  <div class="faq-list">
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What is the Interview Trainer Agent?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        The Interview Trainer Agent is an AI-powered mock interview platform built on IBM Granite
+        and Retrieval-Augmented Generation (RAG). It generates tailored interview questions based
+        on your profile and provides instant, detailed feedback on your answers.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What technology powers this platform?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        The platform is powered by <strong>IBM Granite</strong> (IBM Cloud Lite services) and
+        uses <strong>Retrieval-Augmented Generation (RAG)</strong> to retrieve up-to-date,
+        role-specific information from interview guides, professional databases, and curated
+        knowledge sources before generating responses.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What interview types are supported?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        Three interview types are supported:
+        <ul style="margin-top:8px;padding-left:20px;">
+          <li><strong>HR Round</strong> — Behavioural and soft-skills questions.</li>
+          <li><strong>Technical</strong> — Role-specific in-depth technical questions.</li>
+          <li><strong>Mixed</strong> — A combination of HR and Technical questions.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        How is my answer evaluated?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        Each answer is sent to IBM Granite which evaluates it and returns:
+        <ul style="margin-top:8px;padding-left:20px;">
+          <li>A score out of 10</li>
+          <li>List of strengths in your answer</li>
+          <li>Areas to improve</li>
+          <li>Overall feedback summary</li>
+          <li>A model ideal answer for comparison</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Can I prepare for a specific company like IBM, Google, or Amazon?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        Yes! The platform supports company-specific preparation. When you select a target company,
+        the AI retrieves company-relevant interview topics, common question patterns, and tailored
+        preparation suggestions based on that company's known interview style.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What is the "Start Now" fresher roadmap?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        The "Start Now" section is designed for freshers and entry-level candidates. It provides
+        a complete AI-generated preparation roadmap with daily and weekly goals, recommended books,
+        study notes, coding resources, and a progress dashboard — guiding you from preparation
+        to placement.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        Is my data stored or shared?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        Your session data is stored temporarily in your browser session only for the duration of
+        the interview. It is not persisted to any external database or shared with third parties.
+        Each new interview starts a fresh session.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-question" onclick="toggleFaq(this)">
+        What if IBM Granite is unavailable?
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-answer hidden">
+        The platform includes a graceful fallback mechanism. If the IBM Granite API is unavailable
+        or credentials are not configured, the system falls back to a curated static question bank
+        and stub evaluation responses so you can still practice without interruption.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="info-cta">
+    <a href="/interview_setup" class="portal-btn portal-btn-primary portal-btn-lg">🚀 Start Mock Interview</a>
+    <a href="/guidelines" class="portal-btn portal-btn-outline portal-btn-lg">📋 View Guidelines</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFaq(btn) {
+  const answer = btn.nextElementSibling;
+  const arrow  = btn.querySelector(".faq-arrow");
+  answer.classList.toggle("hidden");
+  arrow.textContent = answer.classList.contains("hidden") ? "▼" : "▲";
+}
+</script>
+{% endblock %}

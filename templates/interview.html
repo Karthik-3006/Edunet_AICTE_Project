@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}AI Interview Trainer — Interview{% endblock %}
+
+{% block content %}
+<div class="interview-wrapper" id="interviewApp">
+
+  <!-- ── Session meta (hidden, read by JS) ──────────────────────────── -->
+  <div id="sessionMeta" style="display:none"
+    data-name="{{ session.interview.name }}"
+    data-role="{{ session.interview.job_role }}"
+    data-experience="{{ session.interview.experience }}"
+    data-type="{{ session.interview.interview_type }}"
+    data-total="{{ session.interview.questions|length }}">
+  </div>
+
+  <!-- ── Progress bar ────────────────────────────────────────────────── -->
+  <div class="progress-container">
+    <div class="progress-meta">
+      <span id="progressLabel">Question 1 of 7</span>
+      <span id="progressPercent">14%</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar" style="width:14%"></div>
+    </div>
+  </div>
+
+  <!-- ── Question card ───────────────────────────────────────────────── -->
+  <div class="card question-card" id="questionCard">
+    <div class="q-header">
+      <span class="q-badge" id="questionBadge">Q1</span>
+      <span class="q-meta" id="questionMeta">Mixed Interview</span>
+    </div>
+    <h2 class="question-text" id="questionText">Loading question&hellip;</h2>
+
+    <!-- Answer form -->
+    <div class="answer-section" id="answerSection">
+      <label class="form-label" for="answerInput">Your Answer</label>
+      <textarea
+        id="answerInput"
+        class="answer-textarea"
+        placeholder="Type your answer here. Be specific, use the STAR method for behavioural questions…"
+        rows="6"
+      ></textarea>
+      <div class="answer-actions">
+        <span class="word-count" id="wordCount">0 words</span>
+        <button class="btn btn-primary" id="submitAnswerBtn">
+          Submit Answer <span class="btn-icon">&#8594;</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Feedback card (hidden until answer submitted) ──────────────── -->
+  <div class="card feedback-card hidden" id="feedbackCard">
+    <h3 class="feedback-title">&#9670; IBM Granite Evaluation</h3>
+
+    <!-- Score ring -->
+    <div class="score-section">
+      <div class="score-ring" id="scoreRing">
+        <svg viewBox="0 0 120 120" class="ring-svg">
+          <circle cx="60" cy="60" r="50" class="ring-bg" />
+          <circle cx="60" cy="60" r="50" class="ring-fill" id="ringFill"
+            stroke-dasharray="314"
+            stroke-dashoffset="314" />
+        </svg>
+        <div class="score-number" id="scoreNumber">—</div>
+        <div class="score-label">/ 10</div>
+      </div>
+      <div class="score-summary" id="scoreSummary"></div>
+    </div>
+
+    <div class="feedback-grid">
+      <!-- Strengths -->
+      <div class="feedback-block strengths-block">
+        <h4 class="block-title strengths-title">&#10003; Strengths</h4>
+        <ul class="feedback-list" id="strengthsList"></ul>
+      </div>
+      <!-- Weaknesses -->
+      <div class="feedback-block weaknesses-block">
+        <h4 class="block-title weaknesses-title">&#9651; Areas to Improve</h4>
+        <ul class="feedback-list" id="weaknessesList"></ul>
+      </div>
+    </div>
+
+    <!-- Suggested answer -->
+    <div class="suggested-section">
+      <h4 class="block-title suggested-title">&#128161; Suggested Answer</h4>
+      <div class="suggested-text" id="suggestedText"></div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="feedback-actions">
+      <button class="btn btn-secondary" id="reviewAnswerBtn">
+        &#8592; Review My Answer
+      </button>
+      <button class="btn btn-primary" id="nextQuestionBtn">
+        Next Question <span class="btn-icon">&#8594;</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Loading overlay ─────────────────────────────────────────────── -->
+  <div class="loading-overlay hidden" id="loadingOverlay">
+    <div class="loader-card">
+      <div class="spinner"></div>
+      <p class="loader-text">IBM Granite is evaluating your answer&hellip;</p>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => initInterviewPage());
+</script>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — Resume Analyzer{% endblock %}
+
+{% block content %}
+<div class="info-page">
+  <a href="/" class="info-back">← Back to Home</a>
+
+  <!-- Hero -->
+  <div class="info-hero">
+    <div class="info-hero-badge">AI-Powered Resume Analysis</div>
+    <h1 class="info-hero-title">📄 Resume Strength Analyzer</h1>
+    <p class="info-hero-sub">Drop your resume — IBM Granite will automatically detect your role &amp; experience, score its strength, highlight missing skills, and give personalised improvement suggestions</p>
+  </div>
+
+  <!-- Upload card -->
+  <div class="ra-upload-card" id="uploadCard">
+    <h2 class="rmap-form-title">Upload Your Resume / CV</h2>
+    <p class="rmap-form-sub">Supported: <strong>PDF</strong>, <strong>Word (.docx/.doc)</strong>, <strong>Images (PNG, JPG, WEBP)</strong>, <strong>Text (.txt)</strong> — or paste text below.</p>
+
+    <!-- Drop zone -->
+    <div class="ra-dropzone" id="dropzone">
+      <div class="ra-drop-icon">📂</div>
+      <p class="ra-drop-text">Drag &amp; drop your resume here</p>
+      <p class="ra-drop-sub" style="font-size:12px;color:var(--muted);margin:4px 0 10px;">
+        PDF · Word (.docx/.doc) · Images (PNG, JPG, WEBP) · Text (.txt)
+      </p>
+      <label class="portal-btn portal-btn-outline" style="cursor:pointer;">
+        Browse File
+        <input type="file" id="resumeFile"
+          accept=".pdf,.docx,.doc,.txt,.text,.png,.jpg,.jpeg,.webp,.bmp,.tiff,.gif"
+          style="display:none" />
+      </label>
+      <p class="ra-file-name hidden" id="fileName"></p>
+      <div id="raFileProgress" class="hidden" style="margin-top:10px;font-size:13px;color:var(--muted);">
+        <span class="rmap-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>
+        Extracting text from file…
+      </div>
+    </div>
+
+    <!-- Or paste text -->
+    <div class="ra-divider"><span>or paste your resume text</span></div>
+    <textarea id="resumeText" class="ra-textarea" rows="10"
+      placeholder="Paste your full resume / CV text here…&#10;&#10;Include: name, skills, experience, projects, education, certifications…"></textarea>
+
+    <button class="portal-btn portal-btn-primary portal-btn-full" id="analyzeResumeBtn" style="margin-top:20px;">
+      🔍 Analyze My Resume
+    </button>
+    <span class="setup-error" id="raTextError" style="display:block;margin-top:8px;"></span>
+
+    <!-- Detected profile preview (shown after AI parsing) -->
+    <div id="raProfilePreview" class="hidden" style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;">
+      <p style="font-size:13px;color:var(--muted);margin:0 0 10px;font-weight:600;">✅ AI detected your profile — analyzing against this:</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <span class="sn-pill" id="pillRole" style="background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;"></span>
+        <span class="sn-pill" id="pillExp" style="background:#f0fdf4;color:#166534;border-color:#bbf7d0;"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="rmap-loading hidden" id="raLoading">
+    <div class="rmap-spinner"></div>
+    <p>IBM Granite is analyzing your resume…</p>
+  </div>
+
+  <!-- Result -->
+  <div class="hidden" id="raResult"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // ── File drag & drop (multi-format) ──────────────────────────
+  const dropzone    = document.getElementById("dropzone");
+  const fileInput   = document.getElementById("resumeFile");
+  const fileNameEl  = document.getElementById("fileName");
+  const fileProgress = document.getElementById("raFileProgress");
+  const textarea    = document.getElementById("resumeText");
+  const raTextError = document.getElementById("raTextError");
+
+  dropzone.addEventListener("dragover", e => { e.preventDefault(); dropzone.classList.add("drag-over"); });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag-over"));
+  dropzone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropzone.classList.remove("drag-over");
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files[0]) handleFileUpload(fileInput.files[0]);
+  });
+
+  async function handleFileUpload(file) {
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    // Plain text: read client-side
+    if (ext === "txt" || ext === "text") {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        textarea.value = ev.target.result;
+        fileNameEl.textContent = "✅ Loaded: " + file.name;
+        fileNameEl.classList.remove("hidden");
+      };
+      reader.readAsText(file);
+      return;
+    }
+
+    // PDF / DOCX / image: server-side extraction
+    fileProgress.classList.remove("hidden");
+    fileNameEl.classList.add("hidden");
+    raTextError.textContent = "";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res  = await fetch("/upload_file", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        raTextError.textContent = data.error || "Could not extract text from file.";
+        return;
+      }
+      textarea.value = data.text || "";
+      fileNameEl.textContent = "✅ Loaded: " + file.name;
+      fileNameEl.classList.remove("hidden");
+    } catch(err) {
+      raTextError.textContent = "Network error while uploading file. Please try again or paste text manually.";
+    } finally {
+      fileProgress.classList.add("hidden");
+    }
+  }
+
+  // ── Analyze button ────────────────────────────────────────────
+  document.getElementById("analyzeResumeBtn").addEventListener("click", async () => {
+    const text    = textarea.value.trim();
+    const errText = document.getElementById("raTextError");
+
+    if (!text) {
+      errText.textContent = "Please upload or paste your resume text.";
+      return;
+    }
+    errText.textContent = "";
+
+    const btn = document.getElementById("analyzeResumeBtn");
+    btn.disabled = true; btn.textContent = "Reading resume…";
+    document.getElementById("raLoading").classList.remove("hidden");
+    document.getElementById("raResult").classList.add("hidden");
+    document.getElementById("raProfilePreview").classList.add("hidden");
+
+    try {
+      // Step 1 — parse the resume to extract role & experience automatically
+      const parseRes  = await fetch("/parse_resume", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ resume_text: text }),
+      });
+      const parseData = await parseRes.json();
+
+      if (!parseRes.ok) {
+        showAlert(parseData.error || "Could not read resume. Please try again.");
+        return;
+      }
+
+      const jobRole   = parseData.job_role   || "Software Engineer";
+      const exp       = parseData.experience || "Entry Level (0-2 years)";
+
+      // Show detected profile chips
+      document.getElementById("pillRole").textContent = "🎯 Role: " + jobRole;
+      document.getElementById("pillExp").textContent  = "📅 " + exp;
+      document.getElementById("raProfilePreview").classList.remove("hidden");
+
+      // Step 2 — run the full resume analysis
+      btn.textContent = "Analyzing…";
+      const res  = await fetch("/analyze_resume", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ resume_text: text, job_role: jobRole, experience: exp }),
+      });
+      const data = await res.json();
+      if (!res.ok) { showAlert(data.error || "Analysis failed."); return; }
+      renderResult(data, jobRole);
+    } catch(err) {
+      showAlert("Network error — please try again.");
+    } finally {
+      btn.disabled = false; btn.textContent = "🔍 Analyze My Resume";
+      document.getElementById("raLoading").classList.add("hidden");
+    }
+  });
+
+  function renderResult(d, role) {
+    const score   = d.score || 0;
+    const color   = score >= 75 ? "#16a34a" : score >= 50 ? "#d97706" : "#dc2626";
+    const grade   = score >= 75 ? "Strong Resume ✅" : score >= 50 ? "Good — Needs Polish 👍" : "Needs Improvement ⚠️";
+    const strengths  = d.strengths  || [];
+    const missing    = d.missing_skills || [];
+    const suggestions= d.suggestions || [];
+    const keywords   = d.keywords   || [];
+
+    let html = `
+      <div class="ra-result-header">
+        <div class="ra-score-ring" style="--score-color:${color}">
+          <svg viewBox="0 0 120 120" class="ra-ring-svg">
+            <circle cx="60" cy="60" r="50" stroke="#e2e5ea" stroke-width="10" fill="none"/>
+            <circle cx="60" cy="60" r="50" stroke="${color}" stroke-width="10" fill="none"
+              stroke-dasharray="314" stroke-dashoffset="${314 - (score/100)*314}"
+              stroke-linecap="round" transform="rotate(-90 60 60)"/>
+          </svg>
+          <div class="ra-score-num" style="color:${color}">${score}</div>
+          <div class="ra-score-lbl">/ 100</div>
+        </div>
+        <div class="ra-score-meta">
+          <h2 class="ra-grade">${grade}</h2>
+          <p class="ra-role-pill">Target: <strong>${escHtml(role)}</strong></p>
+          ${d.summary ? `<p class="ra-summary">${escHtml(d.summary)}</p>` : ""}
+        </div>
+      </div>
+
+      <div class="ra-grid">
+        <div class="ra-block ra-block-green">
+          <h4>✅ Strengths Found</h4>
+          <ul>${strengths.length ? strengths.map(s=>`<li>${escHtml(s)}</li>`).join("") : "<li>No specific strengths detected</li>"}</ul>
+        </div>
+        <div class="ra-block ra-block-red">
+          <h4>⚠️ Missing / Weak Skills for ${escHtml(role)}</h4>
+          <ul>${missing.length ? missing.map(m=>`<li>${escHtml(m)}</li>`).join("") : "<li>No major gaps found</li>"}</ul>
+        </div>
+      </div>`;
+
+    if (keywords.length) {
+      html += `<div class="ra-card"><h4 class="ra-card-title">🔑 Detected Keywords &amp; Skills</h4>
+        <div class="sn-dashboard-pills">${keywords.map(k=>`<span class="sn-pill">${escHtml(k)}</span>`).join("")}</div></div>`;
+    }
+
+    if (suggestions.length) {
+      html += `<div class="ra-card"><h4 class="ra-card-title">💡 AI Improvement Suggestions</h4>
+        <ol class="ra-suggestions">${suggestions.map(s=>`<li>${escHtml(s)}</li>`).join("")}</ol></div>`;
+    }
+
+    html += `
+      <div class="rmap-result-cta">
+        <a href="/interview_setup" class="portal-btn portal-btn-primary portal-btn-lg">🚀 Start Mock Interview</a>
+        <a href="/skill_analyzer" class="portal-btn portal-btn-outline portal-btn-lg">🧠 Analyze My Skills</a>
+        <button onclick="resetAnalyzer()" class="portal-btn portal-btn-secondary portal-btn-lg">🔄 Analyze Another</button>
+      </div>`;
+
+    const container = document.getElementById("raResult");
+    container.innerHTML = html;
+    container.classList.remove("hidden");
+    container.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+
+  window.resetAnalyzer = function() {
+    document.getElementById("raResult").classList.add("hidden");
+    document.getElementById("raProfilePreview").classList.add("hidden");
+    document.getElementById("resumeText").value = "";
+    document.getElementById("fileName").classList.add("hidden");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  function escHtml(s) {
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function showAlert(msg) {
+    let b = document.getElementById("raAlert");
+    if (!b) {
+      b = document.createElement("div"); b.id="raAlert";
+      b.style.cssText="position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;z-index:999;max-width:90vw;";
+      document.body.appendChild(b);
+    }
+    b.textContent = msg; b.style.display = "block";
+    setTimeout(() => { b.style.display="none"; }, 4000);
+  }
+});
+</script>
+{% endblock %}

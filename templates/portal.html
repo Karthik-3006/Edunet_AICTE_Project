@@ -1,0 +1,182 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — Home{% endblock %}
+{% block body_class %}home-page{% endblock %}
+{% block nav_class %}pnav-glass{% endblock %}
+{% block main_class %}home-main{% endblock %}
+{% block footer_class %}home-footer{% endblock %}
+
+{% block content %}
+
+<!-- ══ Animated background orbs ══════════════════════════════════════════ -->
+<div class="home-orb home-orb-1"></div>
+<div class="home-orb home-orb-2"></div>
+<div class="home-orb home-orb-3"></div>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
+<section class="home-hero">
+  <div class="home-hero-inner">
+
+    <!-- Badge -->
+    <div class="home-badge">
+      <span class="home-badge-dot"></span>
+      Powered by IBM Granite · RAG Technology
+    </div>
+
+    <!-- Headline -->
+    <h1 class="home-h1">
+      Start Your Journey to<br>
+      <span class="home-h1-grad">Your Dream Job</span>
+    </h1>
+    <p class="home-sub">
+      AI-powered interview preparation tailored to your role, experience, and goals.
+      Generate personalised questions, get instant feedback, and track your progress.
+    </p>
+
+    <!-- Primary CTA -->
+    <div class="home-cta-row">
+      <a href="/get_started" class="home-btn-primary">
+        <span>Get Started Your Interview</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="/interview_setup" class="home-btn-ghost">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Launch Mock Interview
+      </a>
+    </div>
+
+    <!-- Stats row -->
+    <div class="home-stats">
+      <div class="home-stat">
+        <span class="home-stat-num">7+</span>
+        <span class="home-stat-lbl">Questions / Session</span>
+      </div>
+      <div class="home-stat-div"></div>
+      <div class="home-stat">
+        <span class="home-stat-num">3</span>
+        <span class="home-stat-lbl">Interview Types</span>
+      </div>
+      <div class="home-stat-div"></div>
+      <div class="home-stat">
+        <span class="home-stat-num">AI</span>
+        <span class="home-stat-lbl">Instant Feedback</span>
+      </div>
+      <div class="home-stat-div"></div>
+      <div class="home-stat">
+        <span class="home-stat-num">RAG</span>
+        <span class="home-stat-lbl">Knowledge Retrieval</span>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="home-divider">
+      <span class="home-divider-line"></span>
+      <span class="home-divider-text">Are you a fresher?</span>
+      <span class="home-divider-line"></span>
+    </div>
+
+    <!-- Fresher glass card -->
+    <div class="home-fresher-card">
+      <div class="home-fresher-left">
+        <div class="home-fresher-icon">🗺️</div>
+        <div>
+          <p class="home-fresher-title">Get an AI-Suggested Roadmap</p>
+          <p class="home-fresher-desc">Pick your domain — IBM Granite builds your complete learning path with books, YouTube channels &amp; weekly goals.</p>
+        </div>
+      </div>
+      <a href="/start_now" class="home-btn-outline">
+        Start Now
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ FEATURE CARDS ═════════════════════════════════════════════════════ -->
+<section class="home-features">
+  <h2 class="home-features-title">Everything You Need to Ace Your Interview</h2>
+  <div class="home-features-grid">
+
+    <a href="/resume_analyzer" class="hf-card">
+      <div class="hf-card-top">
+        <div class="hf-icon hf-icon-blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <div class="hf-arrow">→</div>
+      </div>
+      <h3 class="hf-title">Resume Analyzer</h3>
+      <p class="hf-desc">Upload your CV and get an AI strength score, missing skills for your target role, and actionable improvement suggestions.</p>
+      <div class="hf-tags">
+        <span>Strength Score</span><span>Skill Gaps</span><span>AI Tips</span>
+      </div>
+    </a>
+
+    <a href="/skill_analyzer" class="hf-card">
+      <div class="hf-card-top">
+        <div class="hf-icon hf-icon-purple">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="hf-arrow">→</div>
+      </div>
+      <h3 class="hf-title">Skill Analyzer</h3>
+      <p class="hf-desc">Enter your skills and discover how competitive you are in today's market. Get trending skill recommendations and free course links.</p>
+      <div class="hf-tags">
+        <span>Market Rank</span><span>Trending Skills</span><span>Free Courses</span>
+      </div>
+    </a>
+
+    <a href="/start_now" class="hf-card">
+      <div class="hf-card-top">
+        <div class="hf-icon hf-icon-teal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="hf-arrow">→</div>
+      </div>
+      <h3 class="hf-title">Learning Roadmap</h3>
+      <p class="hf-desc">Pick your domain and level. Get a phased roadmap, weekly plan, recommended books, and curated YouTube channels to follow.</p>
+      <div class="hf-tags">
+        <span>Phases</span><span>Books</span><span>YouTube</span>
+      </div>
+    </a>
+
+    <a href="/interview_setup" class="hf-card hf-card-featured">
+      <div class="hf-card-top">
+        <div class="hf-icon hf-icon-gold">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="hf-arrow">→</div>
+      </div>
+      <h3 class="hf-title">Mock Interview</h3>
+      <p class="hf-desc">Start a live AI interview tailored to your resume, role, and experience. Get scored feedback and model answers after every question.</p>
+      <div class="hf-tags">
+        <span>AI Scoring</span><span>Feedback</span><span>Model Answers</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- ══ TRUST STRIP ════════════════════════════════════════════════════════ -->
+<section class="home-trust">
+  <div class="home-trust-item">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    IBM Cloud Lite Services
+  </div>
+  <div class="home-trust-sep">·</div>
+  <div class="home-trust-item">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    IBM Granite Foundation Model
+  </div>
+  <div class="home-trust-sep">·</div>
+  <div class="home-trust-item">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    RAG-Powered Responses
+  </div>
+  <div class="home-trust-sep">·</div>
+  <div class="home-trust-item">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Technical &amp; HR Rounds
+  </div>
+</section>
+
+{% endblock %}

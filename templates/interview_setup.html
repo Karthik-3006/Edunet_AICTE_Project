@@ -1,0 +1,469 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — Setup{% endblock %}
+
+{% block content %}
+<div class="setup-page">
+  <a href="/" class="info-back">← Back to Home</a>
+
+  <!-- Hero -->
+  <div class="setup-hero">
+    <h1 class="setup-hero-title">🚀 Start Your Mock Interview</h1>
+    <p class="setup-hero-sub">Upload your resume — AI will read it and set everything up automatically. Or fill in your profile manually.</p>
+  </div>
+
+  <!-- Tab switcher -->
+  <div class="setup-tabs">
+    <button class="setup-tab active" id="tabResume" onclick="switchTab('resume')">📄 Upload Resume (Auto-fill)</button>
+    <button class="setup-tab" id="tabManual" onclick="switchTab('manual')">✏️ Fill Manually</button>
+  </div>
+
+  <!-- ── RESUME UPLOAD PANEL ──────────────────────────────────────────── -->
+  <div class="setup-card" id="panelResume">
+
+    <!-- Step 1: Upload -->
+    <div id="resumeStep1">
+      <h2 class="rmap-form-title" style="margin-bottom:6px;">📂 Upload Your Resume</h2>
+      <p class="rmap-form-sub">AI will automatically detect your <strong>name, job role, experience level</strong> and generate personalised interview questions.</p>
+
+      <!-- Drop zone -->
+      <div class="ra-dropzone" id="setupDropzone">
+        <div class="ra-drop-icon">📂</div>
+        <p class="ra-drop-text">Drag &amp; drop your resume here</p>
+        <p class="ra-drop-sub" style="font-size:12px;color:var(--muted);margin:4px 0 10px;">
+          Supports <strong>PDF</strong>, <strong>Word (.docx/.doc)</strong>, <strong>Images (PNG, JPG, WEBP)</strong>, <strong>Text (.txt)</strong>
+        </p>
+        <label class="portal-btn portal-btn-outline" style="cursor:pointer;font-size:14px;">
+          Browse File
+          <input type="file" id="setupResumeFile"
+            accept=".pdf,.docx,.doc,.txt,.text,.png,.jpg,.jpeg,.webp,.bmp,.tiff,.gif"
+            style="display:none" />
+        </label>
+        <p class="ra-file-name hidden" id="setupFileName"></p>
+        <div id="setupFileProgress" class="hidden" style="margin-top:10px;font-size:13px;color:var(--muted);">
+          <span class="rmap-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>
+          Extracting text from file…
+        </div>
+      </div>
+
+      <div class="ra-divider"><span>or paste resume text below</span></div>
+      <textarea id="setupResumeText" class="ra-textarea" rows="9"
+        placeholder="Paste your full resume / CV here…
+
+Include your name, skills, experience, projects, certifications, education…"></textarea>
+      <span class="setup-error" id="setupResumeError" style="display:block;margin-top:6px;"></span>
+
+      <button class="portal-btn portal-btn-primary portal-btn-full" id="parseAndStartBtn" style="margin-top:16px;">
+        🔍 Analyze Resume &amp; Start Interview
+      </button>
+      <p style="text-align:center;margin-top:8px;color:var(--muted);font-size:13px;">AI will extract all your details — no manual input needed</p>
+    </div>
+
+    <!-- Step 2: Parsed profile preview (shown after parsing) -->
+    <div id="resumeStep2" class="hidden">
+      <div class="parsed-banner">
+        <span class="parsed-banner-icon">✅</span>
+        <div>
+          <strong>Resume Parsed Successfully!</strong>
+          <p>Review your detected profile below. Edit if needed, then start your interview.</p>
+        </div>
+      </div>
+
+      <!-- Detected skills pills -->
+      <div id="detectedSkillsSection" class="hidden" style="margin-bottom:20px;">
+        <p class="setup-label" style="margin-bottom:8px;">🔑 Detected Skills</p>
+        <div id="detectedSkillsPills" class="sn-dashboard-pills"></div>
+      </div>
+
+      <!-- Auto-filled profile -->
+      <div class="setup-row">
+        <div class="setup-group">
+          <label class="setup-label" for="parsedName">Your Name <span class="parsed-auto-badge">AI detected</span></label>
+          <input type="text" id="parsedName" class="setup-input" placeholder="Detected from resume" />
+        </div>
+        <div class="setup-group">
+          <label class="setup-label" for="parsedJobRole">Job Role <span class="parsed-auto-badge">AI detected</span></label>
+          <input type="text" id="parsedJobRole" class="setup-input" placeholder="Detected from resume" />
+        </div>
+      </div>
+      <div class="setup-row" style="margin-bottom:24px;">
+        <div class="setup-group">
+          <label class="setup-label" for="parsedExperience">Experience Level <span class="parsed-auto-badge">AI detected</span></label>
+          <select id="parsedExperience" class="setup-input">
+            <option value="Entry Level (0-2 years)">Entry Level (0–2 years)</option>
+            <option value="Mid Level (2-5 years)">Mid Level (2–5 years)</option>
+            <option value="Senior Level (5-8 years)">Senior Level (5–8 years)</option>
+            <option value="Lead / Principal (8+ years)">Lead / Principal (8+ years)</option>
+          </select>
+        </div>
+        <div class="setup-group">
+          <label class="setup-label" for="parsedInterviewType">Interview Type</label>
+          <select id="parsedInterviewType" class="setup-input">
+            <option value="Mixed">Mixed (HR + Technical)</option>
+            <option value="Technical">Technical Only</option>
+            <option value="HR">HR / Behavioural Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;">
+        <button class="portal-btn portal-btn-primary" id="confirmAndStartBtn" style="flex:2;">
+          🚀 Start Interview
+        </button>
+        <button class="portal-btn portal-btn-secondary" id="resetResumeBtn" style="flex:1;" onclick="resetResumeStep()">
+          ↩ Re-upload
+        </button>
+      </div>
+      <span class="setup-error" id="parsedStartError" style="display:block;margin-top:8px;"></span>
+    </div>
+
+    <!-- Parsing loader -->
+    <div id="resumeParseLoading" class="hidden" style="text-align:center;padding:40px 0;">
+      <div class="rmap-spinner"></div>
+      <p style="color:var(--muted);font-size:14px;">AI is reading your resume…</p>
+    </div>
+
+  </div>
+
+  <!-- ── MANUAL PANEL ─────────────────────────────────────────────────── -->
+  <div class="setup-card hidden" id="panelManual">
+    <form id="profileForm" novalidate>
+      <div class="setup-row">
+        <div class="setup-group">
+          <label class="setup-label" for="name">Your Name</label>
+          <input type="text" id="name" name="name" class="setup-input"
+            placeholder="e.g. Alex Johnson" required autocomplete="name" />
+          <span class="setup-error" id="nameError"></span>
+        </div>
+        <div class="setup-group">
+          <label class="setup-label" for="jobRole">Job Role</label>
+          <input type="text" id="jobRole" name="job_role" class="setup-input"
+            placeholder="e.g. Software Engineer" required autocomplete="off" list="roleList" />
+          <datalist id="roleList">
+            <option value="Software Engineer"><option value="Data Scientist">
+            <option value="Product Manager"><option value="DevOps Engineer">
+            <option value="Frontend Developer"><option value="Backend Developer">
+            <option value="Full Stack Developer"><option value="Machine Learning Engineer">
+            <option value="Business Analyst"><option value="UX Designer">
+          </datalist>
+          <span class="setup-error" id="jobRoleError"></span>
+        </div>
+      </div>
+      <div class="setup-row">
+        <div class="setup-group">
+          <label class="setup-label" for="experience">Experience Level</label>
+          <select id="experience" name="experience" class="setup-input" required>
+            <option value="" disabled selected>Select level…</option>
+            <option value="Entry Level (0-2 years)">Entry Level (0–2 years)</option>
+            <option value="Mid Level (2-5 years)">Mid Level (2–5 years)</option>
+            <option value="Senior Level (5-8 years)">Senior Level (5–8 years)</option>
+            <option value="Lead / Principal (8+ years)">Lead / Principal (8+ years)</option>
+          </select>
+          <span class="setup-error" id="experienceError"></span>
+        </div>
+        <div class="setup-group">
+          <label class="setup-label" for="targetCompany">Target Company <span class="setup-optional">(optional)</span></label>
+          <input type="text" id="targetCompany" name="target_company" class="setup-input"
+            placeholder="e.g. IBM, Google, Amazon…" autocomplete="off" list="companyList" />
+          <datalist id="companyList">
+            <option value="IBM"><option value="Google"><option value="Amazon">
+            <option value="Microsoft"><option value="Infosys"><option value="TCS">
+            <option value="Wipro"><option value="Accenture"><option value="Meta"><option value="Apple">
+          </datalist>
+        </div>
+      </div>
+      <div class="setup-group" style="margin-bottom:24px;">
+        <label class="setup-label">Interview Type</label>
+        <div class="setup-radio-group" id="interviewType">
+          <label class="setup-radio-card active" data-value="Mixed">
+            <input type="radio" name="interview_type" value="Mixed" checked />
+            <span class="src-icon">⚡</span><span class="src-label">Mixed</span>
+            <span class="src-desc">HR + Technical</span>
+          </label>
+          <label class="setup-radio-card" data-value="HR">
+            <input type="radio" name="interview_type" value="HR" />
+            <span class="src-icon">👤</span><span class="src-label">HR Round</span>
+            <span class="src-desc">Behavioural &amp; Soft Skills</span>
+          </label>
+          <label class="setup-radio-card" data-value="Technical">
+            <input type="radio" name="interview_type" value="Technical" />
+            <span class="src-icon">💻</span><span class="src-label">Technical</span>
+            <span class="src-desc">Role-specific depth</span>
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="portal-btn portal-btn-primary portal-btn-full" id="startBtn">
+        ▶ Start Interview
+      </button>
+    </form>
+  </div>
+
+  <!-- Feature reminder -->
+  <div class="setup-features">
+    <div class="sf-item">🤖 <span>AI reads your resume — no manual entry needed</span></div>
+    <div class="sf-item">⚡ <span>Instant IBM Granite AI feedback</span></div>
+    <div class="sf-item">📊 <span>Full performance summary at the end</span></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  let storedResumeText = "";
+
+  // ── Tab switching ─────────────────────────────────────────────
+  window.switchTab = function(tab) {
+    document.getElementById("panelResume").classList.toggle("hidden", tab !== "resume");
+    document.getElementById("panelManual").classList.toggle("hidden", tab !== "manual");
+    document.getElementById("tabResume").classList.toggle("active", tab === "resume");
+    document.getElementById("tabManual").classList.toggle("active",  tab === "manual");
+  };
+
+  // ── File drag & drop (multi-format) ──────────────────────────
+  const dropzone   = document.getElementById("setupDropzone");
+  const fileInput  = document.getElementById("setupResumeFile");
+  const fileNameEl = document.getElementById("setupFileName");
+  const fileProgress = document.getElementById("setupFileProgress");
+  const textarea   = document.getElementById("setupResumeText");
+
+  dropzone.addEventListener("dragover",  e => { e.preventDefault(); dropzone.classList.add("drag-over"); });
+  dropzone.addEventListener("dragleave", () => dropzone.classList.remove("drag-over"));
+  dropzone.addEventListener("drop", e => {
+    e.preventDefault(); dropzone.classList.remove("drag-over");
+    if (e.dataTransfer.files[0]) handleFileUpload(e.dataTransfer.files[0]);
+  });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files[0]) handleFileUpload(fileInput.files[0]);
+  });
+
+  async function handleFileUpload(file) {
+    const ext = file.name.split(".").pop().toLowerCase();
+    const textTypes = ["txt", "text"];
+
+    // Plain text files: read client-side instantly
+    if (textTypes.includes(ext)) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        textarea.value = ev.target.result;
+        fileNameEl.textContent = "✅ Loaded: " + file.name;
+        fileNameEl.classList.remove("hidden");
+      };
+      reader.readAsText(file);
+      return;
+    }
+
+    // PDF / DOCX / image: send to server for extraction
+    fileProgress.classList.remove("hidden");
+    fileNameEl.classList.add("hidden");
+    const errEl = document.getElementById("setupResumeError");
+    errEl.textContent = "";
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res  = await fetch("/upload_file", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) {
+        errEl.textContent = data.error || "Could not extract text from file.";
+        return;
+      }
+      textarea.value = data.text || "";
+      fileNameEl.textContent = "✅ Loaded: " + file.name;
+      fileNameEl.classList.remove("hidden");
+    } catch(err) {
+      errEl.textContent = "Network error while uploading file. Please try again or paste text manually.";
+    } finally {
+      fileProgress.classList.add("hidden");
+    }
+  }
+
+  // ── Reset back to Step 1 ──────────────────────────────────────
+  window.resetResumeStep = function() {
+    document.getElementById("resumeStep1").classList.remove("hidden");
+    document.getElementById("resumeStep2").classList.add("hidden");
+    storedResumeText = "";
+  };
+
+  // ── Parse Resume & show Step 2 ────────────────────────────────
+  document.getElementById("parseAndStartBtn").addEventListener("click", async () => {
+    const resumeText = textarea.value.trim();
+    const errEl = document.getElementById("setupResumeError");
+
+    if (!resumeText) {
+      errEl.textContent = "Please upload or paste your resume first.";
+      return;
+    }
+    errEl.textContent = "";
+
+    const btn = document.getElementById("parseAndStartBtn");
+    btn.disabled = true; btn.textContent = "Analyzing resume…";
+    document.getElementById("resumeParseLoading").classList.remove("hidden");
+    document.getElementById("resumeStep1").classList.add("hidden");
+
+    try {
+      const res  = await fetch("/parse_resume", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ resume_text: resumeText }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showAlert(data.error || "Could not parse resume.");
+        document.getElementById("resumeStep1").classList.remove("hidden");
+        return;
+      }
+
+      storedResumeText = resumeText;
+
+      // Auto-fill the profile fields
+      document.getElementById("parsedName").value    = data.name     || "";
+      document.getElementById("parsedJobRole").value = data.job_role || "";
+
+      // Set experience dropdown
+      const expSel = document.getElementById("parsedExperience");
+      const expVal = data.experience || "Entry Level (0-2 years)";
+      for (let opt of expSel.options) {
+        if (opt.value === expVal) { opt.selected = true; break; }
+      }
+
+      // Interview type
+      const typeSel = document.getElementById("parsedInterviewType");
+      for (let opt of typeSel.options) {
+        if (opt.value === (data.interview_type || "Mixed")) { opt.selected = true; break; }
+      }
+
+      // Detected skills pills
+      const skills = data.skills || [];
+      if (skills.length) {
+        const pillsContainer = document.getElementById("detectedSkillsPills");
+        pillsContainer.innerHTML = skills.map(s =>
+          `<span class="sn-pill">${escHtml(s)}</span>`
+        ).join("");
+        document.getElementById("detectedSkillsSection").classList.remove("hidden");
+      }
+
+      // Show step 2
+      document.getElementById("resumeParseLoading").classList.add("hidden");
+      document.getElementById("resumeStep2").classList.remove("hidden");
+
+    } catch(err) {
+      showAlert("Network error — please try again.");
+      document.getElementById("resumeStep1").classList.remove("hidden");
+    } finally {
+      document.getElementById("resumeParseLoading").classList.add("hidden");
+      btn.disabled = false; btn.textContent = "🔍 Analyze Resume & Start Interview";
+    }
+  });
+
+  // ── Confirm parsed profile & start interview ──────────────────
+  document.getElementById("confirmAndStartBtn").addEventListener("click", async () => {
+    const name       = document.getElementById("parsedName").value.trim();
+    const jobRole    = document.getElementById("parsedJobRole").value.trim();
+    const experience = document.getElementById("parsedExperience").value;
+    const intType    = document.getElementById("parsedInterviewType").value;
+    const errEl      = document.getElementById("parsedStartError");
+
+    if (!name)       { errEl.textContent = "Please enter your name."; document.getElementById("parsedName").focus(); return; }
+    if (!jobRole)    { errEl.textContent = "Please enter a job role."; document.getElementById("parsedJobRole").focus(); return; }
+    if (!experience) { errEl.textContent = "Please select an experience level."; return; }
+    errEl.textContent = "";
+
+    const btn = document.getElementById("confirmAndStartBtn");
+    btn.disabled = true; btn.textContent = "Starting…";
+
+    try {
+      const res  = await fetch("/start_interview_with_resume", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          name, job_role: jobRole, experience,
+          interview_type: intType, resume_text: storedResumeText,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) { showAlert(data.error || "Failed to start interview."); return; }
+
+      sessionStorage.setItem("firstQuestion", JSON.stringify({
+        question:        data.question,
+        question_number: data.question_number,
+        total_questions: data.total_questions,
+      }));
+      window.location.href = "/interview";
+    } catch(err) {
+      showAlert("Network error — please try again.");
+    } finally {
+      btn.disabled = false; btn.textContent = "🚀 Start Interview";
+    }
+  });
+
+  // ── Manual form ───────────────────────────────────────────────
+  const radioCards = document.querySelectorAll(".setup-radio-card");
+  radioCards.forEach(card => {
+    card.addEventListener("click", () => {
+      radioCards.forEach(c => c.classList.remove("active"));
+      card.classList.add("active");
+      card.querySelector("input[type='radio']").checked = true;
+    });
+  });
+
+  const form = document.getElementById("profileForm");
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      let valid = true;
+      [["name","nameError","Please enter your name."],
+       ["jobRole","jobRoleError","Please enter a job role."],
+       ["experience","experienceError","Please select an experience level."]
+      ].forEach(([id, errId, msg]) => {
+        const el = document.getElementById(id), err = document.getElementById(errId);
+        if (!el.value.trim()) { el.classList.add("invalid"); if(err) err.textContent = msg; valid = false; }
+        else { el.classList.remove("invalid"); if(err) err.textContent = ""; }
+      });
+      if (!valid) return;
+
+      const startBtn = document.getElementById("startBtn");
+      startBtn.disabled = true; startBtn.textContent = "Starting…";
+
+      try {
+        const res = await fetch("/start_interview", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name:           document.getElementById("name").value.trim(),
+            job_role:       document.getElementById("jobRole").value.trim(),
+            experience:     document.getElementById("experience").value,
+            interview_type: document.querySelector("input[name='interview_type']:checked").value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert(data.error || "Failed to start."); startBtn.disabled = false; startBtn.textContent = "▶ Start Interview"; return; }
+        sessionStorage.setItem("firstQuestion", JSON.stringify({
+          question: data.question, question_number: data.question_number, total_questions: data.total_questions,
+        }));
+        window.location.href = "/interview";
+      } catch(err) {
+        showAlert("Network error.");
+        startBtn.disabled = false; startBtn.textContent = "▶ Start Interview";
+      }
+    });
+  }
+
+  function escHtml(s) {
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function showAlert(msg) {
+    let b = document.getElementById("setupAlert");
+    if (!b) {
+      b = document.createElement("div"); b.id="setupAlert";
+      b.style.cssText="position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;z-index:999;max-width:90vw;text-align:center;";
+      document.body.appendChild(b);
+    }
+    b.textContent = msg; b.style.display = "block";
+    setTimeout(() => { b.style.display = "none"; }, 5000);
+  }
+});
+</script>
+{% endblock %}

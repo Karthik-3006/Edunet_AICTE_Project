@@ -1,0 +1,258 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — Fresher Roadmap{% endblock %}
+
+{% block content %}
+<div class="info-page">
+  <a href="/" class="info-back">← Back to Home</a>
+
+  <!-- Hero -->
+  <div class="info-hero info-hero-purple">
+    <div class="info-hero-badge">AI-Powered Learning Path</div>
+    <h1 class="info-hero-title">🗺️ Get Your Personalised Roadmap</h1>
+    <p class="info-hero-sub">Tell us your area of interest — IBM Granite will design your complete learning journey with books, videos &amp; milestones</p>
+  </div>
+
+  <!-- Domain Interest Form -->
+  <div class="rmap-form-card" id="roadmapFormCard">
+    <h2 class="rmap-form-title">What do you want to become?</h2>
+    <p class="rmap-form-sub">Select or type your domain of interest and we'll generate a personalised roadmap, recommended books, YouTube channels and weekly goals.</p>
+
+    <form id="roadmapForm" novalidate>
+      <!-- Domain chips -->
+      <div class="rmap-chips" id="domainChips">
+        <button type="button" class="rmap-chip" data-domain="Frontend Developer">🌐 Frontend Developer</button>
+        <button type="button" class="rmap-chip" data-domain="Backend Developer">⚙️ Backend Developer</button>
+        <button type="button" class="rmap-chip" data-domain="Full Stack Developer">🔗 Full Stack Developer</button>
+        <button type="button" class="rmap-chip" data-domain="Data Scientist">📊 Data Scientist</button>
+        <button type="button" class="rmap-chip" data-domain="Machine Learning Engineer">🤖 ML Engineer</button>
+        <button type="button" class="rmap-chip" data-domain="DevOps Engineer">🛠️ DevOps Engineer</button>
+        <button type="button" class="rmap-chip" data-domain="Cybersecurity Analyst">🔒 Cybersecurity</button>
+        <button type="button" class="rmap-chip" data-domain="Cloud Architect">☁️ Cloud Architect</button>
+        <button type="button" class="rmap-chip" data-domain="Mobile App Developer">📱 Mobile Developer</button>
+        <button type="button" class="rmap-chip" data-domain="UI/UX Designer">🎨 UI/UX Designer</button>
+        <button type="button" class="rmap-chip" data-domain="Product Manager">📋 Product Manager</button>
+        <button type="button" class="rmap-chip" data-domain="Business Analyst">📈 Business Analyst</button>
+      </div>
+
+      <div class="rmap-form-row">
+        <div class="rmap-form-group">
+          <label class="setup-label" for="domainInput">Your Domain / Role</label>
+          <input type="text" id="domainInput" class="setup-input"
+            placeholder="e.g. Data Scientist, Cloud Architect, DevOps…" autocomplete="off" required />
+          <span class="setup-error" id="domainError"></span>
+        </div>
+        <div class="rmap-form-group">
+          <label class="setup-label" for="currentLevel">Current Level</label>
+          <select id="currentLevel" class="setup-input">
+            <option value="Complete Beginner">Complete Beginner (no experience)</option>
+            <option value="Basic Knowledge">Basic Knowledge (some courses done)</option>
+            <option value="Intermediate">Intermediate (projects done)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="rmap-form-group" style="margin-bottom:20px;">
+        <label class="setup-label" for="goalInput">Your Goal / Target <span class="setup-optional">(optional)</span></label>
+        <input type="text" id="goalInput" class="setup-input"
+          placeholder="e.g. Land a job at IBM in 6 months, crack FAANG interviews…" autocomplete="off" />
+      </div>
+
+      <button type="submit" class="portal-btn portal-btn-primary portal-btn-full" id="generateRoadmapBtn">
+        🗺️ Generate My Roadmap
+      </button>
+    </form>
+  </div>
+
+  <!-- Loading state -->
+  <div class="rmap-loading hidden" id="roadmapLoading">
+    <div class="rmap-spinner"></div>
+    <p>IBM Granite is crafting your personalised roadmap…</p>
+  </div>
+
+  <!-- Result container -->
+  <div class="hidden" id="roadmapResult"></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Chip selection
+  document.querySelectorAll(".rmap-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".rmap-chip").forEach(c => c.classList.remove("active"));
+      chip.classList.add("active");
+      document.getElementById("domainInput").value = chip.dataset.domain;
+    });
+  });
+
+  // Form submit
+  document.getElementById("roadmapForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const domain = document.getElementById("domainInput").value.trim();
+    if (!domain) {
+      const err = document.getElementById("domainError");
+      err.textContent = "Please select or type a domain.";
+      document.getElementById("domainInput").classList.add("invalid");
+      return;
+    }
+    document.getElementById("domainInput").classList.remove("invalid");
+    document.getElementById("domainError").textContent = "";
+
+    const level  = document.getElementById("currentLevel").value;
+    const goal   = document.getElementById("goalInput").value.trim();
+    const btn    = document.getElementById("generateRoadmapBtn");
+
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+    document.getElementById("roadmapLoading").classList.remove("hidden");
+    document.getElementById("roadmapResult").classList.add("hidden");
+
+    try {
+      const res  = await fetch("/generate_roadmap", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ domain, level, goal }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) { showRmapAlert(data.error || "Failed to generate roadmap."); return; }
+      renderRoadmap(data, domain, level);
+    } catch(err) {
+      showRmapAlert("Network error — please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "🗺️ Generate My Roadmap";
+      document.getElementById("roadmapLoading").classList.add("hidden");
+    }
+  });
+
+  function renderRoadmap(data, domain, level) {
+    const container = document.getElementById("roadmapResult");
+    const phases    = data.phases || [];
+    const books     = data.books  || [];
+    const videos    = data.videos || [];
+    const tips      = data.tips   || [];
+    const weekly    = data.weekly_plan || [];
+
+    let html = `
+      <div class="rmap-result-header">
+        <div class="rmap-result-badge">Your Personalised Roadmap</div>
+        <h2 class="rmap-result-title">${escHtml(domain)} — ${escHtml(level)}</h2>
+        ${data.overview ? `<p class="rmap-result-overview">${escHtml(data.overview)}</p>` : ""}
+      </div>`;
+
+    // Phases
+    if (phases.length) {
+      html += `<h3 class="rmap-section-title">📍 Learning Phases</h3><div class="rmap-phases">`;
+      phases.forEach((p, i) => {
+        html += `
+          <div class="rmap-phase">
+            <div class="rmap-phase-num">${i+1}</div>
+            <div class="rmap-phase-body">
+              <h4>${escHtml(p.title || "Phase " + (i+1))}</h4>
+              <p>${escHtml(p.description || "")}</p>
+              ${p.topics ? `<ul class="rmap-topic-list">${p.topics.map(t=>`<li>${escHtml(t)}</li>`).join("")}</ul>` : ""}
+              ${p.duration ? `<span class="rmap-duration">⏱ ${escHtml(p.duration)}</span>` : ""}
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Weekly plan
+    if (weekly.length) {
+      html += `<h3 class="rmap-section-title">📅 Weekly Plan</h3><div class="rmap-weekly">`;
+      weekly.forEach(w => {
+        html += `
+          <div class="rmap-week-card">
+            <div class="rmap-week-label">${escHtml(w.week || "")}</div>
+            <p>${escHtml(w.focus || "")}</p>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Books
+    if (books.length) {
+      html += `<h3 class="rmap-section-title">📚 Recommended Books</h3><div class="rmap-resource-list">`;
+      books.forEach(b => {
+        html += `
+          <div class="rmap-resource-item">
+            <span class="rmap-resource-icon">📖</span>
+            <div>
+              <strong>${escHtml(b.title || b)}</strong>
+              ${b.author ? `<span class="rmap-res-meta"> — ${escHtml(b.author)}</span>` : ""}
+              ${b.reason ? `<p class="rmap-res-reason">${escHtml(b.reason)}</p>` : ""}
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Videos / Channels
+    if (videos.length) {
+      html += `<h3 class="rmap-section-title">▶️ YouTube Channels &amp; Videos</h3><div class="rmap-resource-list">`;
+      videos.forEach(v => {
+        html += `
+          <div class="rmap-resource-item">
+            <span class="rmap-resource-icon">🎬</span>
+            <div>
+              <strong>${escHtml(v.title || v)}</strong>
+              ${v.channel ? `<span class="rmap-res-meta"> — ${escHtml(v.channel)}</span>` : ""}
+              ${v.url ? `<a class="rmap-res-link" href="${escHtml(v.url)}" target="_blank" rel="noopener">Open on YouTube ↗</a>` : ""}
+              ${v.reason ? `<p class="rmap-res-reason">${escHtml(v.reason)}</p>` : ""}
+            </div>
+          </div>`;
+      });
+      html += `</div>`;
+    }
+
+    // Tips
+    if (tips.length) {
+      html += `<h3 class="rmap-section-title">💡 Pro Tips</h3><ul class="rmap-tips-list">`;
+      tips.forEach(t => { html += `<li>${escHtml(t)}</li>`; });
+      html += `</ul>`;
+    }
+
+    // CTA
+    html += `
+      <div class="rmap-result-cta">
+        <a href="/interview_setup" class="portal-btn portal-btn-primary portal-btn-lg">🚀 Start Mock Interview</a>
+        <button class="portal-btn portal-btn-outline portal-btn-lg" onclick="resetRoadmap()">🔄 New Roadmap</button>
+      </div>`;
+
+    container.innerHTML = html;
+    container.classList.remove("hidden");
+    container.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function escHtml(str) {
+    if (!str) return "";
+    return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function showRmapAlert(msg) {
+    let b = document.getElementById("rmapAlert");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "rmapAlert";
+      b.style.cssText = "position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;z-index:999;max-width:90vw;text-align:center;";
+      document.body.appendChild(b);
+    }
+    b.textContent = msg;
+    b.style.display = "block";
+    setTimeout(() => { b.style.display = "none"; }, 4000);
+  }
+});
+
+function resetRoadmap() {
+  document.getElementById("roadmapResult").classList.add("hidden");
+  document.getElementById("roadmapFormCard").scrollIntoView({ behavior: "smooth" });
+  document.querySelectorAll(".rmap-chip").forEach(c => c.classList.remove("active"));
+  document.getElementById("domainInput").value = "";
+  document.getElementById("goalInput").value = "";
+}
+</script>
+{% endblock %}

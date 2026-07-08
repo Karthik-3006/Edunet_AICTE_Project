@@ -1,0 +1,102 @@
+{% extends "portal_base.html" %}
+{% block title %}Interview Trainer Agent — Get Started{% endblock %}
+
+{% block content %}
+<div class="info-page">
+
+  <!-- Back -->
+  <a href="/" class="info-back">← Back to Home</a>
+
+  <!-- Hero banner -->
+  <div class="info-hero">
+    <div class="info-hero-badge">Powered by IBM Granite · RAG Technology</div>
+    <h1 class="info-hero-title">An Interview Trainer Agent</h1>
+    <p class="info-hero-sub">powered by RAG (Retrieval-Augmented Generation)</p>
+  </div>
+
+  <!-- Description card -->
+  <div class="info-card">
+    <p class="info-lead">
+      An Interview Trainer Agent, powered by RAG (Retrieval-Augmented Generation),
+      prepares users for job interviews by generating tailored question sets and preparation
+      strategies based on their <strong>profile name</strong>, <strong>experience level</strong>,
+      and <strong>job role</strong>.
+    </p>
+
+    <p>
+      It retrieves role-specific interview questions, industry expectations, behavioral scenarios,
+      and HR guidelines from recruitment portals, professional networks, and company interview
+      databases.
+    </p>
+
+    <p>
+      Users can input their resume or job title, and the agent provides <strong>targeted questions</strong>,
+      <strong>model answers</strong>, and <strong>improvement tips</strong>.
+    </p>
+
+    <p>
+      It supports both <strong>technical</strong> and <strong>soft skill</strong> assessment,
+      ensuring a comprehensive interview prep experience.
+    </p>
+
+    <p>
+      This AI-driven assistant builds user confidence, sharpens responses, and increases success
+      rates in competitive hiring environments.
+    </p>
+
+    <div class="info-tech-note">
+      <span class="info-tech-icon">⚙️</span>
+      <strong>Technology —</strong> Use of IBM Cloud Lite services / IBM Granite is mandatory.
+    </div>
+  </div>
+
+  <!-- Capability tiles -->
+  <h2 class="info-section-title">What This Agent Does</h2>
+  <div class="info-tiles">
+    <div class="info-tile">
+      <div class="info-tile-icon">🎯</div>
+      <h3>Tailored Question Sets</h3>
+      <p>Generates role- and experience-specific interview questions drawn from live recruitment data.</p>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">📋</div>
+      <h3>Resume-Based Strategy</h3>
+      <p>Upload your resume (<strong>PDF, Word, image, or text</strong>) or enter a job title to get targeted preparation strategies and model answers.</p>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">💬</div>
+      <h3>Technical &amp; Soft Skills</h3>
+      <p>Covers both technical depth and behavioral competencies for a complete interview prep.</p>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">🏢</div>
+      <h3>Company-Specific Prep</h3>
+      <p>Retrieves question patterns for IBM, Google, Amazon, Microsoft, Infosys, TCS and more.</p>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">⚡</div>
+      <h3>Instant AI Feedback</h3>
+      <p>IBM Granite evaluates every answer — score, strengths, weaknesses, and ideal response.</p>
+    </div>
+    <div class="info-tile">
+      <div class="info-tile-icon">📊</div>
+      <h3>Performance Reports</h3>
+      <p>Full breakdown after each mock session showing improvement areas and readiness score.</p>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="info-cta">
+    <p class="info-cta-text">Ready to start your AI-powered mock interview?</p>
+    <div class="info-cta-buttons">
+      <a href="/interview_setup" class="portal-btn portal-btn-primary portal-btn-lg">
+        🚀 Launch Mock Interview
+      </a>
+      <a href="/start_now" class="portal-btn portal-btn-outline portal-btn-lg">
+        📚 View Full Prep Assistant
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

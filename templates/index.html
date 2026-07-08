@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}AI Interview Trainer — Home{% endblock %}
+
+{% block content %}
+<!-- ── Hero ──────────────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-text">
+    <h1 class="hero-title">Ace Your Next Interview</h1>
+    <p class="hero-subtitle">
+      Practice with AI-powered mock interviews tailored to your role,
+      experience, and interview style. Get instant feedback from IBM Granite.
+    </p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card"><span class="stat-number">7</span><span class="stat-label">Questions</span></div>
+    <div class="stat-card"><span class="stat-number">3</span><span class="stat-label">Interview Types</span></div>
+    <div class="stat-card"><span class="stat-number">AI</span><span class="stat-label">Powered Feedback</span></div>
+  </div>
+</section>
+
+<!-- ── Profile Form ───────────────────────────────────────────────────── -->
+<section class="form-section">
+  <div class="card form-card">
+    <h2 class="card-title">Start Your Mock Interview</h2>
+    <p class="card-subtitle">Fill in your details to generate a personalised question set.</p>
+
+    <form id="profileForm" novalidate>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="name">
+            <span class="label-icon">&#9654;</span> Your Name
+          </label>
+          <input
+            type="text" id="name" name="name"
+            class="form-input" placeholder="e.g. Alex Johnson"
+            required autocomplete="name"
+          />
+          <span class="form-error" id="nameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="jobRole">
+            <span class="label-icon">&#9654;</span> Job Role
+          </label>
+          <input
+            type="text" id="jobRole" name="job_role"
+            class="form-input" placeholder="e.g. Software Engineer"
+            required autocomplete="off" list="roleList"
+          />
+          <datalist id="roleList">
+            <option value="Software Engineer">
+            <option value="Data Scientist">
+            <option value="Product Manager">
+            <option value="DevOps Engineer">
+            <option value="Frontend Developer">
+            <option value="Backend Developer">
+            <option value="Full Stack Developer">
+            <option value="Machine Learning Engineer">
+            <option value="Business Analyst">
+            <option value="UX Designer">
+          </datalist>
+          <span class="form-error" id="jobRoleError"></span>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="experience">
+            <span class="label-icon">&#9654;</span> Experience Level
+          </label>
+          <select id="experience" name="experience" class="form-select" required>
+            <option value="" disabled selected>Select level&hellip;</option>
+            <option value="Entry Level (0-2 years)">Entry Level (0–2 years)</option>
+            <option value="Mid Level (2-5 years)">Mid Level (2–5 years)</option>
+            <option value="Senior Level (5-8 years)">Senior Level (5–8 years)</option>
+            <option value="Lead / Principal (8+ years)">Lead / Principal (8+ years)</option>
+          </select>
+          <span class="form-error" id="experienceError"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="interviewType">
+            <span class="label-icon">&#9654;</span> Interview Type
+          </label>
+          <div class="radio-group" id="interviewType">
+            <label class="radio-card active" data-value="Mixed">
+              <input type="radio" name="interview_type" value="Mixed" checked />
+              <span class="radio-icon">&#9670;</span>
+              <span class="radio-label">Mixed</span>
+              <span class="radio-desc">HR + Technical</span>
+            </label>
+            <label class="radio-card" data-value="HR">
+              <input type="radio" name="interview_type" value="HR" />
+              <span class="radio-icon">&#128100;</span>
+              <span class="radio-label">HR Round</span>
+              <span class="radio-desc">Behavioural &amp; Soft Skills</span>
+            </label>
+            <label class="radio-card" data-value="Technical">
+              <input type="radio" name="interview_type" value="Technical" />
+              <span class="radio-icon">&#128187;</span>
+              <span class="radio-label">Technical</span>
+              <span class="radio-desc">Role-specific depth</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" id="startBtn">
+        <span class="btn-icon">&#9654;</span>
+        Start Interview
+      </button>
+
+    </form>
+  </div>
+</section>
+
+<!-- ── Feature strip ──────────────────────────────────────────────────── -->
+<section class="features">
+  <div class="feature-item">
+    <div class="feature-icon">&#127919;</div>
+    <h3>Personalised Questions</h3>
+    <p>Questions are generated based on your role and seniority for maximum relevance.</p>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">&#9889;</div>
+    <h3>Instant AI Feedback</h3>
+    <p>IBM Granite scores each answer, highlights strengths, and suggests improvements.</p>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon">&#128200;</div>
+    <h3>Detailed Summary</h3>
+    <p>Receive a full performance report at the end to guide your preparation.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Delegate to main.js — initHomePage() wires the form.
+  document.addEventListener("DOMContentLoaded", () => initHomePage());
+</script>
+{% endblock %}
